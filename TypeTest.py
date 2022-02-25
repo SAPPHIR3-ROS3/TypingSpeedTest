@@ -3,17 +3,30 @@ from random import randint as Rand
 from time import time as Time
 from tkinter import W
 
-def PhraseGen(): # randomly generate "phrases"
+def PhraseGen(Min = 8, Max = 15): # randomly generate "phrases"
     Alphabet = "abcdefghijklmnopqrstuvwxyz"
     Prompt = ""
 
-    for i in range(Rand(8, 15)): # loop for amount of words
+    for i in range(Rand(Min, Max)): # loop for amount of words
         for _ in range(Rand(2, 9)): # loop for amount of characters in string
             Prompt += Pick(Alphabet) # add a char to the phrase
         
         Prompt += " " # add space between "words"
 
     return Prompt[: -1]
+
+def FilePhraseGen(Min = 8, Max = 15): # randomly generate phrases from a a wordlist taken from a file
+    with open('words.txt') as File:
+        WordsList = [Word.strip() for Word in File.readlines() if 2 < len(Word.strip()) < 9] # extracting all the words from the words file
+        WordsList = [Word for Word in WordsList if '.' not in Word] #filtering
+        WordsList = [Word for Word in WordsList if '-' not in Word] #filtering
+        WordsList = [Word for Word in WordsList if not any(Char.isdigit() for Char in Word)] #filtering
+
+    Prompt = [Pick(WordsList) for i in range(Rand(Min, Max))] #generating the phrase
+    
+    return ' '.join(Prompt)
+
+
 
 def TimeElapsed(Start = 0.0, End = 0.0): # compute elapsed time
     return round(End - Start, 2)
@@ -33,8 +46,8 @@ def PrintResult(WPM = 0.0, Time = 0.0, Mystypes = 0.0): # print the result
     print(f'Errors: {Mystypes}')
 
 if __name__ == "__main__":
-    print('-' * 80)
-    Prompt = PhraseGen()
+    print('-' * 100)
+    Prompt = FilePhraseGen()
     print(f'Type this:\n{Prompt}')
     input('press ENTER when ready')
 
@@ -43,9 +56,9 @@ if __name__ == "__main__":
     End = Time()
 
     if len(Input) > len(Prompt):
-        Prompt += '-' * (len(Input) - len(Prompt))
+        Input = Input[:len(Prompt)]
     if len(Input) < len(Prompt):
-        Input += '-' * (len(Prompt) - len(Input))
+        Prompt = Prompt[:len(Input)]
 
     DeltaTime = TimeElapsed(Start, End)
     MistypeErrors = Errors(Prompt, Input)
@@ -53,5 +66,5 @@ if __name__ == "__main__":
 
     PrintResult(WPM, DeltaTime, MistypeErrors)
 
-    print('-' * 80)
+    print('-' * 100)
     input()
