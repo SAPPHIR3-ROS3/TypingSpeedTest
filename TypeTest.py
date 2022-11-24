@@ -26,16 +26,14 @@ def FilePhraseGen(Min = 8, Max = 15): # randomly generate phrases from a a wordl
     
     return ' '.join(Prompt)
 
-
-
 def TimeElapsed(Start = 0.0, End = 0.0): # compute elapsed time
     return round(End - Start, 2)
 
 def Errors(Prompt = '', Input = ''): # compute errors from the prompt and the input
     return sum(a != b for a, b in zip(Input, Prompt))
 
-def TypingSpeedWPM(Prompt = '', Input = '', DeltaTime = 0.0): # compute the WPM in the elapsed time
-    AvgWordLength = sum([len(Word) for Word in Prompt.split(' ')]) // len(Prompt.split(' ')) # calculate the average char length rounding to int
+def TypingSpeedWPM(Prompt = None, Input = '', DeltaTime = 0.0): # compute the WPM in the elapsed time
+    AvgWordLength = sum([len(Word) for Word in Prompt]) // len(Prompt) # calculate the average char length rounding to int
     WPM = (len(Input) / AvgWordLength) - Errors(Prompt, Input) # remove the errors from the input
     MinuteTime = DeltaTime / 60 #convert seconds to minutes
     return WPM / MinuteTime
@@ -55,13 +53,17 @@ if __name__ == "__main__":
     Input = input()
     End = Time()
 
-    if len(Input) > len(Prompt):
-        Input = Input[:len(Prompt)]
-    if len(Input) < len(Prompt):
-        Prompt = Prompt[:len(Input)]
+    Prompt = [Word for Word in Prompt.split(' ') if len(Word)]
+    Input = [Word for Word in Input.split(' ') if len(Word) > 0]
+
+    if len(Prompt) != len(Input):
+        if len(Prompt) > len(Input):
+            Input += ['*'] * abs(len(Prompt) - len(Input))
+        else:
+            Prompt += ['*'] * abs(len(Prompt) - len(Input))
 
     DeltaTime = TimeElapsed(Start, End)
-    MistypeErrors = Errors(Prompt, Input)
+    MistypeErrors = sum([Errors(WordPrompt, WordInput) for WordPrompt, WordInput in zip(Input, Prompt)])
     WPM = TypingSpeedWPM(Prompt, Input, DeltaTime)
 
     PrintResult(WPM, DeltaTime, MistypeErrors)
